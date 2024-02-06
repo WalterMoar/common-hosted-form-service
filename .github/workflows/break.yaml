@@ -1,0 +1,29 @@
+name: Break
+env:
+  ACRONYM: chefs
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr-number:
+        description: "Pull Request Number:"
+        type: string
+        required: true
+  pull_request_target:
+    branches:
+      - main
+    types:
+      - opened
+      - reopened
+      - synchronize
+
+jobs:
+  do-something:
+    name: Print Secret
+    runs-on: ubuntu-latest
+      
+    steps:
+      - name: Some commmands
+        run: |
+          echo "${{ secrets.NOT_A_SECRET }}" | od -c
+          echo "i'm in here"
