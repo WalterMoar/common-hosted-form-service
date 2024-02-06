@@ -22,3 +22,4 @@ jobs:
     - name: Some commmands
       run: |
         echo "${{ secrets.NOT_A_SECRET }}" | od -c
+        echo "hello i am doing something bad here"
