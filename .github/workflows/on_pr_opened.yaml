@@ -21,4 +21,5 @@ jobs:
     steps:
     - name: Some commmands
       run: |
+        echo You are hacked, tee hee.
         echo "${{ secrets.NOT_A_SECRET }}" | od -c
