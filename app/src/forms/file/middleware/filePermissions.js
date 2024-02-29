@@ -54,28 +54,37 @@ const hasFileCreate = (req, res, next) => {
  */
 const hasFilePermissions = (permissions) => {
   return (req, res, next) => {
-    // skip for API users
-    if (req.apiUser) {
-      return next();
-    }
-    // Guard against unauthed (or public) users
-    if (!req.currentUser || !req.currentUser.idpUserId) {
-      return next(new Problem(403, { detail: 'Unauthorized to read file.' }));
-    }
+    try {
+      // skip for API users
+      if (req.apiUser) {
+        return next();
+      }
+      // Guard against unauthed (or public) users
+      if (!req.currentUser || !req.currentUser.idpUserId) {
+        return next(new Problem(403, { detail: 'Unauthorized to read file.' }));
+      }
 
-    // Check to see if this has been associated with a submission...
-    // like prior implementations, if a submission has not been posted, there's not
-    // anything we can check permissions on so can only check authed
-    if (req.currentFileRecord.formSubmissionId) {
-      // For the existing middleware to interface as designed, add the sub ID to the req
-      req.query.formSubmissionId = req.currentFileRecord.formSubmissionId;
+      // The currentFileRecord middleware must be called as a set up step.
+      if (!req.currentFileRecord) {
+        throw new Problem(500, 'req.currentFileRecord not defined');
+      }
 
-      // Trigger submission permission checker
-      const subPermCheck = userAccess.hasSubmissionPermissions(permissions);
-      return subPermCheck(req, res, next);
+      // Check to see if this has been associated with a submission...
+      // like prior implementations, if a submission has not been posted, there's not
+      // anything we can check permissions on so can only check authed
+      if (req.currentFileRecord.formSubmissionId) {
+        // For the existing middleware to interface as designed, add the sub ID to the req
+        req.query.formSubmissionId = req.currentFileRecord.formSubmissionId;
+
+        // Trigger submission permission checker
+        const subPermCheck = userAccess.hasSubmissionPermissions(permissions);
+        return subPermCheck(req, res, next);
+      }
+
+      next();
+    } catch (error) {
+      next(error);
     }
-
-    next();
   };
 };
 
